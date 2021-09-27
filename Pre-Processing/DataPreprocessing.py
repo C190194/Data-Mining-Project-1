@@ -11,7 +11,7 @@ Reference:
     1. http://cgi.csc.liv.ac.uk/~frans/KDD/Software/LUCS-KDD-DN/lucs-kdd_DN.html
 """
 import discretization
-
+import readDataFile
 
 # Identify the mode of a list, both effective for numerical and categorical list. When there exists too many modes
 #   having the same frequency, return the first one.
@@ -43,7 +43,7 @@ def fill_missing_values(data, column_no):
     return data
 
 
-# Get the list needed by rmep.py, just glue the data column with class column.
+# Get the list needed by discretization.py, just glue the data column with class column.
 # data_column: the data column
 # class_column: the class label column
 def get_discretization_data(data_column, class_column):
@@ -77,14 +77,14 @@ def replace_numerical(data, column_no, walls):
 # column_no: identify which column to be processed
 def replace_categorical(data, column_no):
     size = len(data)
-    classes = set([x[column_no] for x in data])
-    classes_no = dict([(label, 0) for label in classes])
+    classes = set([x[column_no] for x in data])  # get distinct classes in "categorical" data column
+    classes_no = dict([(label, 0) for label in classes])  # a dictionary to count the label in each classes
     j = 1
     for i in classes:
         classes_no[i] = j
         j += 1
     for i in range(size):
-        data[i][column_no] = classes_no[data[i][column_no]]
+        data[i][column_no] = classes_no[data[i][column_no]]  # assign each categorical values with a positive integer sequentially
     return data, classes_no
 
 
@@ -113,7 +113,8 @@ def pre_process(data, attribute, value_type):
     size = len(data)
     class_column = [x[-1] for x in data]
     discard_list = []
-    for i in range(0, column_num - 1):
+    for i in range(0, column_num-1):
+        print("i = ", i, "value type:", value_type[i])
         data_column = [x[i] for x in data]
 
         # process missing values
@@ -125,8 +126,9 @@ def pre_process(data, attribute, value_type):
             data = fill_missing_values(data, i)
             data_column = [x[i] for x in data]
 
-        # discretization
+        # use discretization function
         if value_type[i] == 'numerical':
+            print("numerical column detected: ", data_column)
             discretization_data = get_discretization_data(data_column, class_column)
             block = discretization.Block(discretization_data)
             walls = discretization.partition(block)
@@ -136,11 +138,13 @@ def pre_process(data, attribute, value_type):
                 step = (max_value - min_value) / 3
                 walls.append(min_value + step)
                 walls.append(min_value + 2 * step)
-            #print(attribute[i] + ":", walls)        # print out split points
+            print(attribute[i] + ":", walls)        # print out the walls: split points of the data
             data = replace_numerical(data, i, walls)
+            continue
         elif value_type[i] == 'categorical':
             data, classes_no = replace_categorical(data, i)
             print(attribute[i] + ":", classes_no)   # print out replacement list
+        print("column being preprocessed", i)
 
     # discard
     if len(discard_list) > 0:
@@ -150,20 +154,12 @@ def pre_process(data, attribute, value_type):
 
 
 # just for test
-if __name__ == '__main__':
-    test_data = [
-        ['red', 25.6, 56, 1],
-        ['green', 33.3, 1, 1],
-        ['green', 2.5, 23, 0],
-        ['blue', 67.2, 111, 1],
-        ['red', 29.0, 34, 0],
-        ['yellow', 99.5, 78, 1],
-        ['yellow', 10.2, 23, 1],
-        ['yellow', 9.9, 30, 0],
-        ['blue', 67.0, 47, 0],
-        ['red', 41.8, 99, 1]
-    ]
-    test_attribute = ['color', 'average', 'age', 'class']
-    test_value_type = ['categorical', 'numerical', 'numerical', 'label']
-    test_data_after = pre_process(test_data, test_attribute, test_value_type)
-    print(test_data_after)
+if __name__ == '__main__':    
+    test_data_path = './iris.data'
+    test_scheme_path = './iris.names'
+    test_data, test_attributes, test_value_type = readDataFile.read(test_data_path, test_scheme_path)
+    print(test_value_type)
+    test_data_after = pre_process(test_data, test_attributes, test_value_type)
+
+
+   
