@@ -28,9 +28,9 @@ def main():
     # test_data_path = 'datasets/iris.data'
     # test_scheme_path = 'datasets/iris.names'
 
-    data, attributes, value_type = read(test_data_path, test_scheme_path)
+    data_list, attributes, attribute_types = read_files(test_data_path, test_scheme_path)
     random.shuffle(data)
-    train_dataset = pre_process(data, attributes, value_type)
+    train_data = preprocessing_main(data_list, attributes, attribute_types)
 
     cars = rule_generator(train_dataset, 0.22, 0.6)
     cars.prune_rules(train_dataset)
