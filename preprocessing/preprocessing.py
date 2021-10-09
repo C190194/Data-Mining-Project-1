@@ -1,5 +1,5 @@
 import discretization
-import read_file
+import readfile
 
 # Obtain the mode value for a column of data list
 # Used for missing value 
@@ -180,9 +180,9 @@ def preprocessing_main(data, attributes, attribute_types):
 
 # just for test
 if __name__ == '__main__':    
-    test_data_path = './zoo.data'
-    test_names_path = './zoo.names'
-    test_data, test_attributes, test_attributes_types = read_file.read_files(test_data_path, test_names_path)
+    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.data'
+    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.names'
+    test_data, test_attributes, test_attributes_types = readfile.read_files(test_data_path, test_names_path)
     proprocessed_test_data = preprocessing_main(test_data, test_attributes, test_attributes_types)
 
 
