@@ -1,12 +1,3 @@
-"""
-Description: The implementation of a naive algorithm for CBA-CB: M1. The class Classifier includes the set of selected
-    rules and default_class, which can be expressed as <r1, r2, ..., rn, default_class>. Method classifier_builder_m1
-    is the main method to implement CBA-CB: M1.
-Input: a set of CARs generated from rule_generator (see cab_rg.py) and a dataset got from pre_process
-    (see pre_processing.py)
-Output: a classifier
-Reference: http://www.docin.com/p-586554186.html
-"""
 import cba_rg
 from functools import cmp_to_key
 import sys
@@ -28,18 +19,17 @@ def check_cover(data_line, rule):
         return False
 
 
-class Classifier:
+class Classifier_M1:
     """
     Build the class for classifier. 
     The rule_list and default_class are useful for outer code.
     """
     def __init__(self):
         self.rule_list = list()
-        self.default_label = None
         self.error_list = list()
+        self.default_label = None
         self.default_label_list = list()
 
-    # insert a rule into rule_list, then choose a default class, and calculate the errors (see line 8, 10 & 11)
     def rule_insertion(self, rule, data_list):
         """ Insert a single rule into rule_list.
         Choose a default label from the current dataset.
@@ -115,14 +105,14 @@ class Classifier:
 
 
     def print(self):
-        """ A print function that print out all the selected rules and default labels in the classifier. """
+        """ A print function that print out all the selected rules 
+        and default class label in the classifier. """
         for rule in self.rule_list:
             rule.print_rule()
-        print("Default labels:", self.default_label)
+        print("Default class label:", self.default_label)
 
 
-
-def sort_CARs(car)
+def sort_CARs(car):
     """ Sort the list of generated class association rules in descending order.
     The order is based on the relation ">" in precendence.
     Return the sorted rule list. """

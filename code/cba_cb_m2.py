@@ -13,42 +13,55 @@ import cba_cb_m1
 from functools import cmp_to_key
 
 
-class Classifier_m2:
+class Classifier_M2:
     """
-    The definition of classifier formed in CBA-CB: M2. It contains a list of rules order by their precedence, a default
-    class label. The other member are private and useless for outer code.
+    Build the class for classifier. 
+    The definition of classifier formed in CBA-CB: M2. 
+    It contains a list of generated rules order by precedence and a default class label. 
+    The other member are private and useless for outer code.
     """
     def __init__(self):
         self.rule_list = list()
-        self.default_class = None
-        self._default_class_list = list()
-        self._total_errors_list = list()
+        self.default_label = None
+        self.num_errors_list = list()
+        self.default_label_list = list()
 
-    # insert a new rule into classifier
-    def add(self, rule, default_class, total_errors):
+    def rule_insertion(self, rule, default_label, num_errors):
+        """ Insert a new tule into the classifier. """
+        # apped the parameters to the respective list
         self.rule_list.append(rule)
-        self._default_class_list.append(default_class)
-        self._total_errors_list.append(total_errors)
+        self.default_label_list.append(default_label)
+        self.num_errors_list.append(num_errors)
 
     # discard those rules that introduce more errors. See line 18-20, CBA-CB: M2 (Stage 3).
-    def discard(self):
-        index = self._total_errors_list.index(min(self._total_errors_list))
+    def rule_cleaning(self):
+        """ Find the rule with the minimum number of erros.
+        Drop all the remaining rules after that rule. """
+        # find the minimum number of errors in the list
+        min_errors = min(self.num_errors_list)
+        # fine the rule's index position
+        position = self.num_errors_list.index(min_errors)
+        # discard all the rules after
         self.rule_list = self.rule_list[:(index + 1)]
-        self._total_errors_list = None
+        self.num_errors_list = None
+        # assign the default label 
+        # to be the label at the same position index as the rule in the default_label_list
+        self.default_label = self.default_label_list[position]
+        self.default_label_list = None
+        
 
-        self.default_class = self._default_class_list[index]
-        self._default_class_list = None
-
-    # just print out rules and default class label
     def print(self):
+        """ A print function that print out all the selected rules 
+        and default class label in the classifier. """
         for rule in self.rule_list:
             rule.print_rule()
-        print("default_class:", self.default_class)
+        print("Default class label:", self.default_label)
 
 
 class Rule(ruleitem.RuleItem):
     """
-    A class inherited from RuleItem, adding classCasesCovered and replace field.
+    Class that inherite RuleItem
+    Adding classCasesCovered and replace field.
     """
     def __init__(self, cond_set, class_label, dataset):
         ruleitem.RuleItem.__init__(self, cond_set, class_label, dataset)
