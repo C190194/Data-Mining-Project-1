@@ -1,14 +1,9 @@
-"""
-Description: Definition of class RuleItem, including condset, class label (y in paper), condsupCount, rulesupCount,
-    support and confidence.
-Input: condset which is a set of items, class label and the dataset.
-Output: a ruleitem with its condsupCount, rulesupCount, support and confidence.
-Author: CBA Studio
-Reference: https://www.cs.uic.edu/~hxiao/courses/cs594-slides.pdf
-"""
-
-
-class RuleItem:
+class RuleItem: 
+    """ 
+    Build the class RuleItem, including condset, class label y, condsupCount, rulesupCount, support and confidence. 
+    Input: condset which include a set of items, label and the data_list.
+    Output: a ruleitem with the value of condsupCount, rulesupCount, support and confidence. 
+    """
     def __init__(self, cond_set, class_label, dataset):
         """ According to the paper, each frequent k-ruleitems consists of the following:
         condset: a dictiondary that has key-value pair {"item name: value, item name: value...},
@@ -89,3 +84,16 @@ class RuleItem:
         print(condset_content + ' -> (Class label: ' + str(self.label) + ')')
 
 
+# just for test
+if __name__ == '__main__':
+    condset = {0: 1, 1: 1}
+    label = 1
+    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
+               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
+    ruleitem = RuleItem(condset, label, data_list)
+    ruleitem.print_ruleitem()
+    ruleitem.print_rule()
+    print('condsupCount =', ruleitem.condsupCount)   # should be 3
+    print('rulesupCount =', ruleitem.rulesupCount)   # should be 2
+    print('support =', ruleitem.support)               # should be 0.2
+    print('confidence =', ruleitem.confidence)         # should be 0.667

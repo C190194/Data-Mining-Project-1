@@ -6,13 +6,13 @@ import sys
 def check_cover(data_line, rule):
     """ Check whether the rule covers a single line in the data_list,
     the line is each row in the original data_list """
-    for item in rule.cond_set:
+    for item in rule.condset:
         # check if  the dataline and the LHS of the rule are the same
         # if different, return None
-        if dataline[item] != rule.cond_set[item]:
+        if data_line[item] != rule.condset[item]:
             return None
     # if same and they belong to the same class label, return ture
-    if data_line[-1] == rule.class_label:
+    if data_line[-1] == rule.label:
         return True
     # else return false
     else:
@@ -56,9 +56,8 @@ class Classifier_M1:
                 default_label = label
         self.default_label_list.append(default_label)
 
-    # count the total number of errors
     def count_errors(self, data_list):
-        """ calculate the sum of errors. """
+        """ count the total number of errors. """
         # if the length of data_list is equal or smaller than 0
         if len(data_list) <= 0:
             self.error_list.append(sys.maxsize)
@@ -144,7 +143,7 @@ def sort_CARs(car):
     rule_list.sort(key=cmp_to_key(compare_rules))
     return rule_list
 
-
+"""
 # main method of CBA-CB: M1
 def classifier_builder_m1(cars, dataset):
     classifier = Classifier()
@@ -187,3 +186,4 @@ if __name__ == '__main__':
     cars.rules = cars.pruned_rules
     classifier = classifier_builder_m1(cars, dataset)
     classifier.print()
+"""

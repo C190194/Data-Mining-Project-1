@@ -4,12 +4,13 @@ Description: The following code implements an improved version of the algorithm,
     time. In stage 2, for each case d that we could not decide which rule should cover it in stage 1, we go through d
     again to find all rules that classify it wrongly and have a higher precedence than the corresponding cRule of d.
     Finally, in stage 3, we choose the final set of rules to form our final classifer.
-Input: a set of CARs generated from rule_generator (see cab_rg.py) and a dataset got from pre_process
+Input: a set of CARs generated from rule_generator (see cab_rg.py) and a data_list got from pre_process
     (see pre_processing.py)
 Output: a classifier
 """
+import sys
 import ruleitem
-import cba_cb_m1
+import CBA_CB_M1
 from functools import cmp_to_key
 
 
@@ -28,7 +29,7 @@ class Classifier_M2:
 
     def rule_insertion(self, rule, default_label, num_errors):
         """ Insert a new tule into the classifier. """
-        # apped the parameters to the respective list
+        # append the parameters to the respective list
         self.rule_list.append(rule)
         self.default_label_list.append(default_label)
         self.num_errors_list.append(num_errors)
@@ -60,66 +61,94 @@ class Classifier_M2:
 
 class Rule(ruleitem.RuleItem):
     """
-    Class that inherite RuleItem
-    Adding classCasesCovered and replace field.
+    Build a Rule class that inherite RuleItem class.
+    Adding num_label_covered to record the number of times cRule covered each class label
+    and replace field.
     """
-    def __init__(self, cond_set, class_label, dataset):
-        ruleitem.RuleItem.__init__(self, cond_set, class_label, dataset)
-        self._init_classCasesCovered(dataset)
+    def __init__(self, condset, label, data_list):
+        # Inerite the class attributes from RuleItem
+        ruleitem.RuleItem.__init__(self, condset, label, data_list)
+        # Add other class attributes
+        self._init_num_label_covered(data_list)
         self.replace = set()
 
-    # initialize the classCasesCovered field
-    def _init_classCasesCovered(self, dataset):
-        class_column = [x[-1] for x in dataset]
-        class_label = set(class_column)
-        self.classCasesCovered = dict((x, 0) for x in class_label)
+    def _init_num_label_covered(self, data_list):
+        """ Initialize the num_label_covered. 
+        This is the same as classCasesCovered field in the paper. """
+        # find the label column, which is at the last column
+        label_column = [x[-1] for x in data_list]
+        # find all distinct labels
+        labels = set(label_column)
+        # build a dictionary for num_label_covered
+        self.num_label_covered = dict((label, 0) for label in labels)
 
 
-# convert ruleitem of class RuleItem to rule of class Rule
-def ruleitem2rule(rule_item, dataset):
-    rule = Rule(rule_item.cond_set, rule_item.class_label, dataset)
+def ruleitem_to_rule(ruleitem, data_list):
+    """ Convert the ruleitem in RuleItem class to rule in Rule class. """
+    rule = Rule(ruleitem.condset, ruleitem.label, data_list)
     return rule
 
 
-# finds the highest precedence rule that covers the data case d from the set of rules having the same class as d.
-def maxCoverRule_correct(cars_list, data_case):
-    for i in range(len(cars_list)):
-        if cars_list[i].class_label == data_case[-1]:
-            if cba_cb_m1.is_satisfy(data_case, cars_list[i]):
-                return i
+def find_cRule_index(CARs_list, data):
+    """ Stage 1: Find the highest precedence rule cRule (in paper) that correctly classifies data case d
+    from the set of rule having the same class label as d. 
+    This function is the same as 'maxCoverRule' in paper. """
+    CARs_length = len(CARs_list)
+    for index in range(CARs_length):
+        # if they belongs to the same class label
+        if CARs_list[index].label == data[-1]:
+            # check wether the rule in the cars_list cover the single data line
+            if CBA_CB_M1.check_cover(data, CARs_list[index]):
+                # if ture, return the index
+                return index
     return None
 
 
 # finds the highest precedence rule that covers the data case d from the set of rules having the different class as d.
-def maxCoverRule_wrong(cars_list, data_case):
-    for i in range(len(cars_list)):
-        if cars_list[i].class_label != data_case[-1]:
-            temp_data_case = data_case[:-1]
-            temp_data_case.append(cars_list[i].class_label)
-            if cba_cb_m1.is_satisfy(temp_data_case, cars_list[i]):
-                return i
+def find_wRule_index(CARs_list, data):
+    """ Stage 1: Find the highest precedence rule wRule (in paper) that wrongly classifies data case d
+    from the set of rule having the different class label as d. """
+    CARs_length = len(CARs_list)
+    for index in range(CARs_length):
+        # if the have different class label
+        if CARs_list[index].label != data[-1]:
+            # create a temporary data case that without the class label
+            temporary_data = data[:-1]
+            # append the class label in the rule to the temporary data case
+            temporary_data.append(CARs_list[index].label)
+            # if the rule in CARs_list can cover the temporary data line
+            if CBA_CB_M1.check_cover(temporary_data, CARs_list[index]):
+                # return the index
+                return index
     return None
 
 
-# compare two rule, return the precedence.
-#   -1: rule1 < rule2, 0: rule1 < rule2 (randomly here), 1: rule1 > rule2
-def compare(rule1, rule2):
-    if rule1 is None and rule2 is not None:
-        return -1
-    elif rule1 is None and rule2 is None:
-        return 0
-    elif rule1 is not None and rule2 is None:
+def compare_rules(r1, r2):
+    """ Comapre two rules based on precedence.
+    return 1: if r1 > r2
+    return 0: if r1 = r2
+    return -1: if r2 > r1 """
+    if r1 is not None and r2 is None:
         return 1
-
-    if rule1.confidence < rule2.confidence:     # 1. the confidence of ri > rj
+    elif r1 is None and r2 is None:
+        return 0
+    elif r1 is None and r2 is not None:
         return -1
-    elif rule1.confidence == rule2.confidence:
-        if rule1.support < rule2.support:       # 2. their confidences are the same, but support of ri > rj
+    # 1. confidence of r2 > r1, r2 have higher precedence
+    if r2.confidence > r1.confidence:     
+        return -1
+    # 2. confidences are the same
+    elif r1.confidence == r2.confidence:
+        # but support of r2 > r1, r2 have higher precedence
+        if rule2.support > rule1.support:       
             return -1
-        elif rule1.support == rule2.support:
-            if len(rule1.cond_set) < len(rule2.cond_set):   # 3. confidence & support are the same, ri earlier than rj
-                return 1
-            elif len(rule1.cond_set) == len(rule2.cond_set):
+        # 3. confidence and support are the same, 
+        elif r1.support == r2.support:
+            # but r1 generated earlier than r2, r1 have higher precedence
+            if len(r1.condset) < len(r2.condset):    
+                return 1 
+            # if all conditions are the same, return 0                           
+            elif len(r1.condset) == len(r2.condset):
                 return 0
             else:
                 return -1
@@ -129,51 +158,59 @@ def compare(rule1, rule2):
         return 1
 
 
-# finds all the rules in u that wrongly classify the data case and have higher precedences than that of its cRule.
-def allCoverRules(u, data_case, c_rule, cars_list):
-    w_set = set()
-    for rule_index in u:
-        # have higher precedences than cRule
-        if compare(cars_list[rule_index], c_rule) > 0:
-            # wrongly classify the data case
-            if cba_cb_m1.is_satisfy(data_case, cars_list[rule_index]) == False:
-                w_set.add(rule_index)
-    return w_set
+def find_wSet(U, data, cRule, CARs_list):
+    """ Stage2: Find all the rules in U: the set of all cRules (as stated in the paper)
+    that wrongly classify the data line 
+    and have higher precedence than that of its cRule. """
+    wSet = set()
+    for index in U:
+        # if the rule have higher precedences than cRule
+        if compare_rules(CARs_list[index], cRule) > 0:
+            # and it does not cover the data line
+            if CBA_CB_M1.check_cover(data, CARs_list[index]) == False:
+                # add the index
+                wSet.add(index)
+    return wSet
 
 
-# counts the number of training cases in each class
-def compClassDistr(dataset):
-    class_distr = dict()
+def find_label_count(data_list):
+    """ Count the number of data cases in each class label. """
+    # Initialize an empty dictionary
+    label_count = dict()
+    
+    # in the case if there are no data in the data_list
+    if len(data_list) <= 0:
+        label_count = None
 
-    if len(dataset) <= 0:
-        class_distr = None
-
-    dataset_without_null = dataset
-    while [] in dataset_without_null:
-        dataset_without_null.remove([])
-
-    class_column = [x[-1] for x in dataset_without_null]
-    class_label = set(class_column)
-    for c in class_label:
-        class_distr[c] = class_column.count(c)
-    return class_distr
+    label_column = [x[-1] for x in data_list]
+    labels = set(label_column)
+    for label in labels:
+        # count the number of each labels and add to the dictionary
+        label_count[label] = label_column.count(label)
+    return label_count
 
 
-# sort the rule list order by precedence
-def sort_with_index(q, cars_list):
-    def cmp_method(a, b):
-        # 1. the confidence of ri > rj
-        if cars_list[a].confidence < cars_list[b].confidence:
+def sort_CARs(Q, CARs_list):
+    """ Sort the list of generated class association rules in descending order.
+    The order is based on the relation ">" in precendence.
+    Return the sorted rule list.
+    Q: the set of cRules that have a higher precedence than their corresponding wRules. """
+    def compare_rules(i, j):
+        # 1. the confidence of rj > ri
+        if CARs_list[j].confidence > CARs_list[i].confidence:
             return 1
-        elif cars_list[a].confidence == cars_list[b].confidence:
-            # 2. their confidences are the same, but support of ri > rj
-            if cars_list[a].support < cars_list[b].support:
+        # 2. their confidences are the same
+        elif CARs_list[i].confidence == CARs_list[j].confidence:
+            # but support of rj > ri
+            if CARs_list[j].support > CARs_list[i].support:
                 return 1
-            elif cars_list[a].support == cars_list[b].support:
-                # 3. both confidence & support are the same, ri earlier than rj
-                if len(cars_list[a].cond_set) < len(cars_list[b].cond_set):
+            # if both confidence and support are the same
+            elif CARs_list[i].support == CARs_list[j].support:
+                # but ri is generated earlier than rj
+                if len(CARs_list[i].condset) < len(CARs_list[j].condset):
                     return -1
-                elif len(cars_list[a].cond_set) == len(cars_list[b].cond_set):
+                # if all conditions are the same
+                elif len(CARs_list[i].condset) == len(CARs_list[j].condset):
                     return 0
                 else:
                     return 1
@@ -182,118 +219,135 @@ def sort_with_index(q, cars_list):
         else:
             return -1
 
-    rule_list = list(q)
-    rule_list.sort(key=cmp_to_key(cmp_method))
+    rule_list = list(Q)
+    # sort the rule_list based on precedence
+    rule_list.sort(key=cmp_to_key(compare_rules))
     return set(rule_list)
 
 
-# get how many errors the rule wrongly classify the data case
-def errorsOfRule(rule, dataset):
-    error_number = 0
-    for case in dataset:
-        if case:
-            if cba_cb_m1.is_satisfy(case, rule) == False:
-                error_number += 1
-    return error_number
+def count_rule_errors(rule, data_list):
+    """ Count the number of errors that a rule wrongly classify a data line. """
+    num_errors = 0
+    # iterate through each single line of data_list
+    for line in data_list:
+        if line:
+            # check if it correcly classify the data
+            if CBA_CB_M1.check_cover(line, rule) == False:
+                # if false, number of errors + 1
+                num_errors += 1
+    return num_errors
 
 
-# choose the default class (majority class in remaining dataset)
-def selectDefault(class_distribution):
-    if class_distribution is None:
+
+def default_label_selection(label_count):
+    """ Find the default class label, 
+    which is the label with the highest frequency in the reamining data_list. """
+    if label_count is None:
         return None
+    max_count = 0
+    # Initialization
+    default_label = None
+    # a for loop to find the label with maximum frequency
+    for label in label_count:
+        if label_count[label] > max_count:
+            # update max_count
+            max_count = label_count[label]
+            default_label = label
+    return default_label
 
-    max = 0
-    default_class = None
-    for index in class_distribution:
-        if class_distribution[index] > max:
-            max = class_distribution[index]
-            default_class = index
-    return default_class
-
-
-# count the number of errors that the default class will make in the remaining training data
-def defErr(default_class, class_distribution):
-    if class_distribution is None:
-        import sys
+def count_default_label_errors(default_label, label_count):
+    """ Count the total number of errors that the selected default label will make
+    in the remainig data_list. """
+    if label_count is None:
         return sys.maxsize
+    # Initialization
+    num_errors = 0
+    for label in label_count:
+        # if the label is different from the default label
+        if label != default_label:
+            # number of errors + label_count of that label
+            num_errors += label_count[label]
+    return num_errors
 
-    error = 0
-    for index in class_distribution:
-        if index != default_class:
-            error += class_distribution[index]
-    return error
 
+def build_classifier_M2(CARs, data_list):
+    """ This is the main function of the M2 classifier that combine everything
+    to build the compelete classifier. """
+    classifier = Classifier_M2()
 
-# main method, implement the whole classifier builder
-def classifier_builder_m2(cars, dataset):
-    classifier = Classifier_m2()
+    CARs_list = CBA_CB_M1.sort_CARs(cars)
+    CARs_length = len(CARs_list)
+    for index in range(CARs_length):
+        CARs_list[index] = ruleitem_to_rulerule(CARs_list[index], data_list)
 
-    cars_list = cba_cb_m1.sort(cars)
-    for i in range(len(cars_list)):
-        cars_list[i] = ruleitem2rule(cars_list[i], dataset)
-
-    # stage 1
-    q = set()
-    u = set()
-    a = set()
+    # Stage 1 in the paper
+    # Q is the set of cRules that have a higher precedence than their corresponding wRules
+    Q = set()
+    # U is the set of all cRules
+    U = set()
+    # A is the collection of <dID, y, cRule, wRule>
+    A = set()
     mark_set = set()
-    for i in range(len(dataset)):
-        c_rule_index = maxCoverRule_correct(cars_list, dataset[i])
-        w_rule_index = maxCoverRule_wrong(cars_list, dataset[i])
-        if c_rule_index is not None:
-            u.add(c_rule_index)
-        if c_rule_index:
-            cars_list[c_rule_index].classCasesCovered[dataset[i][-1]] += 1
-        if c_rule_index and w_rule_index:
-            if compare(cars_list[c_rule_index], cars_list[w_rule_index]) > 0:
-                q.add(c_rule_index)
-                mark_set.add(c_rule_index)
+    data_size = len(data_list)
+    for data_index in range(data_size):
+        cRule_index = find_cRule_index(CARs_list, data_list[data_index])
+        wRule_index = find_wRule_index(CARs_list, data_list[data_index])
+        if cRule_index is not None:
+            # add to U
+            U.add(cRule_index)
+        if cRule_index:
+            # the count of label covered by the rule + 1
+            CARs_list[cRule_index].num_label_covered[data_list[data_index][-1]] += 1
+        if cRule_index and wRule_index:
+            if compare_rules(CARs_list[cRule_index], CARs_list[wRule_index]) > 0:
+                q.add(cRule_index)
+                mark_set.add(cRule_index)
             else:
-                a.add((i, dataset[i][-1], c_rule_index, w_rule_index))
-        elif c_rule_index is None and w_rule_index is not None:
-            a.add((i, dataset[i][-1], c_rule_index, w_rule_index))
+                a.add((i, data_list[data_index][-1], cRule_index, wRule_index))
+        elif cRule_index is None and wRule_index is not None:
+            a.add((data_index, data_list[data_index][-1], cRule_index, wRule_index))
 
     # stage 2
     for entry in a:
-        if cars_list[entry[3]] in mark_set:
+        if CARs_list[entry[3]] in mark_set:
             if entry[2] is not None:
-                cars_list[entry[2]].classCasesCovered[entry[1]] -= 1
-            cars_list[entry[3]].classCasesCovered[entry[1]] += 1
+                CARs_list[entry[2]].num_label_covered[entry[1]] -= 1
+            CARs_list[entry[3]].num_label_covered[entry[1]] += 1
         else:
             if entry[2] is not None:
-                w_set = allCoverRules(u, dataset[entry[0]], cars_list[entry[2]], cars_list)
+                w_set = find_wSet(U, data_list[entry[0]], CARs_list[entry[2]], CARs_list)
             else:
-                w_set = allCoverRules(u, dataset[entry[0]], None, cars_list)
+                w_set = find_wSet(U, data_list[entry[0]], None, CARs_list)
             for w in w_set:
-                cars_list[w].replace.add((entry[2], entry[0], entry[1]))
-                cars_list[w].classCasesCovered[entry[1]] += 1
+                CARs_list[w].replace.add((entry[2], entry[0], entry[1]))
+                CARs_list[w].num_label_covered[entry[1]] += 1
             q |= w_set
 
     # stage 3
     rule_errors = 0
-    q = sort_with_index(q, cars_list)
-    data_cases_covered = list([False] * len(dataset))
+    q = sort_with_index(q, CARs_list)
+    data_cases_covered = list([False] * len(data_list))
     for r_index in q:
-        if cars_list[r_index].classCasesCovered[cars_list[r_index].class_label] != 0:
-            for entry in cars_list[r_index].replace:
+        if CARs_list[r_index].num_label_covered[CARs_list[r_index].class_label] != 0:
+            for entry in CARs_list[r_index].replace:
                 if data_cases_covered[entry[1]]:
-                    cars_list[r_index].classCasesCovered[entry[2]] -= 1
+                    CARs_list[r_index].num_label_covered[entry[2]] -= 1
                 else:
                     if entry[0] is not None:
-                        cars_list[entry[0]].classCasesCovered[entry[2]] -= 1
-            for i in range(len(dataset)):
-                datacase = dataset[i]
+                        CARs_list[entry[0]].num_label_covered[entry[2]] -= 1
+            for i in range(len(data_list)):
+                datacase = data_list[i]
                 if datacase:
-                    is_satisfy_value = cba_cb_m1.is_satisfy(datacase, cars_list[r_index])
+                    is_satisfy_value = CBA_CB_M1.check_cover(datacase, CARs_list[r_index])
                     if is_satisfy_value:
-                        dataset[i] = []
+                        data_list[i] = []
                         data_cases_covered[i] = True
-            rule_errors += errorsOfRule(cars_list[r_index], dataset)
-            class_distribution = compClassDistr(dataset)
-            default_class = selectDefault(class_distribution)
-            default_errors = defErr(default_class, class_distribution)
+            rule_errors += count_rule_errors(CARs_list[r_index], data_list)
+            label_count = find_label_count(data_list)
+            default_label = default_label_selection(class_distribution)
+            default_errors = count_default_label_errors(default_label, label_count)
             total_errors = rule_errors + default_errors
-            classifier.add(cars_list[r_index], default_class, total_errors)
+            classifier.add(CARs_list[r_index], default_class, total_errors)
     classifier.discard()
 
     return classifier
@@ -303,18 +357,18 @@ def classifier_builder_m2(cars, dataset):
 if __name__ == "__main__":
     import cba_rg
 
-    dataset = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
+    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
                [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
     minsup = 0.15
     minconf = 0.6
-    cars = cba_rg.rule_generator(dataset, minsup, minconf)
-    classifier = classifier_builder_m2(cars, dataset)
+    cars = cba_rg.rule_generator(data_list, minsup, minconf)
+    classifier = build_classifier_M2(cars, data_list)
     classifier.print()
 
     print()
-    dataset = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
+    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
                [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    cars.prune_rules(dataset)
+    cars.prune_rules(data_list)
     cars.rules = cars.pruned_rules
-    classifier = classifier_builder_m2(cars, dataset)
+    classifier = build_classifier_M2(cars, data_list)
     classifier.print()
