@@ -1,12 +1,12 @@
 """
-Description: The following code implements an improved version of the algorithm, called CBA-CB: M2. It contains three
-    stages. For stage 1, we scan the whole database, to find the cRule and wRule, get the set Q, U and A at the same
-    time. In stage 2, for each case d that we could not decide which rule should cover it in stage 1, we go through d
+    Implementation of CBA-CB_M2 Classifier. The main function contains three stages. 
+    For stage 1, we scan the whole database to find the cRule and wRule, get the set Q, U and A at the same
+    time. In stage 2, for each data case d that we could not decide which rule should cover it in stage 1, we go through d
     again to find all rules that classify it wrongly and have a higher precedence than the corresponding cRule of d.
     Finally, in stage 3, we choose the final set of rules to form our final classifer.
-Input: a set of CARs generated from rule_generator (see cab_rg.py) and a data_list got from pre_process
-    (see pre_processing.py)
-Output: a classifier_M2
+Input: a set of CARs generated from rule_generator (see cab_rg.py) and a data_list got from preprocessing.py
+
+Output: classifier_M2
 """
 import sys
 import ruleitem
