@@ -6,7 +6,7 @@ Description: The following code implements an improved version of the algorithm,
     Finally, in stage 3, we choose the final set of rules to form our final classifer.
 Input: a set of CARs generated from rule_generator (see cab_rg.py) and a data_list got from pre_process
     (see pre_processing.py)
-Output: a classifier
+Output: a classifier_M2
 """
 import sys
 import ruleitem
@@ -16,8 +16,8 @@ from functools import cmp_to_key
 
 class Classifier_M2:
     """
-    Build the class for classifier. 
-    The definition of classifier formed in CBA-CB: M2. 
+    Build the class for classifier_M2. 
+    The definition of classifier_M2 formed in CBA-CB: M2. 
     It contains a list of generated rules order by precedence and a default class label. 
     The other member are private and useless for outer code.
     """
@@ -28,7 +28,7 @@ class Classifier_M2:
         self.default_label_list = list()
 
     def rule_insertion(self, rule, default_label, num_errors):
-        """ Insert a new tule into the classifier. """
+        """ Insert a new rule into the classifier_M2. """
         # append the parameters to the respective list
         self.rule_list.append(rule)
         self.default_label_list.append(default_label)
@@ -36,7 +36,7 @@ class Classifier_M2:
 
     # discard those rules that introduce more errors. See line 18-20, CBA-CB: M2 (Stage 3).
     def rule_cleaning(self):
-        """ Find the rule with the minimum number of erros.
+        """ Find the rule with the minimum number of total erros.
         Drop all the remaining rules after that rule. """
         # find the minimum number of errors in the list
         min_errors = min(self.num_errors_list)
@@ -53,7 +53,7 @@ class Classifier_M2:
 
     def print(self):
         """ A print function that print out all the selected rules 
-        and default class label in the classifier. """
+        and default class label in the classifier_M2. """
         for rule in self.rule_list:
             rule.print_rule()
         print("Default class label:", self.default_label)
@@ -273,7 +273,7 @@ def count_default_label_errors(default_label, label_count):
 def build_classifier_M2(CARs, data_list):
     """ This is the main function of the M2 classifier that combine everything
     to build the compelete classifier. """
-    classifier = Classifier_M2()
+    classifier_M2 = Classifier_M2()
 
     CARs_list = CBA_CB_M1.sort_CARs(cars)
     CARs_length = len(CARs_list)
@@ -287,7 +287,8 @@ def build_classifier_M2(CARs, data_list):
     U = set()
     # A is the collection of <dID, y, cRule, wRule>
     A = set()
-    mark_set = set()
+    # mark the cRule to indicate it classifies a data case correctly
+    mark = set()
     data_size = len(data_list)
     for data_index in range(data_size):
         cRule_index = find_cRule_index(CARs_list, data_list[data_index])
@@ -296,61 +297,107 @@ def build_classifier_M2(CARs, data_list):
             # add to U
             U.add(cRule_index)
         if cRule_index:
-            # the count of label covered by the rule + 1
+            # the count of label covered by the cRule + 1
             CARs_list[cRule_index].num_label_covered[data_list[data_index][-1]] += 1
+        # if there exist both cRule and wRule,  compare their precedence
         if cRule_index and wRule_index:
-            if compare_rules(CARs_list[cRule_index], CARs_list[wRule_index]) > 0:
-                q.add(cRule_index)
-                mark_set.add(cRule_index)
+            # if cRule have a higher precedence then wRule, cRule > wRule
+            if compare_rules(CARs_list[cRule_index], CARs_list[wRule_index]) == 1:
+                # add the cRule_index to Q set according to the paper
+                Q.add(cRule_index)
+                # mark the cRule
+                mark.add(cRule_index)
+            # if wRule > cRule
             else:
-                a.add((i, data_list[data_index][-1], cRule_index, wRule_index))
+                # complex case, cannot decide which rule will eventually cover the data case
+                # add the collection of values into A set as stated in the paper <dID, y, cRule, wRule>
+                A.add((data_index, data_list[data_index][-1], cRule_index, wRule_index))
+        # add the collection <dID, y, cRule, wRule>
         elif cRule_index is None and wRule_index is not None:
-            a.add((data_index, data_list[data_index][-1], cRule_index, wRule_index))
+            A.add((data_index, data_list[data_index][-1], cRule_index, wRule_index))
 
-    # stage 2
-    for entry in a:
-        if CARs_list[entry[3]] in mark_set:
-            if entry[2] is not None:
-                CARs_list[entry[2]].num_label_covered[entry[1]] -= 1
-            CARs_list[entry[3]].num_label_covered[entry[1]] += 1
+    # Stage 2 in the paper
+    # interate through each collection in A set
+    for collection in A:
+        # if the wRule is marked, which means it is the cRule of at least once
+        # This satisfy the 2 conditions.
+        if CARs_list[collection[3]] in mark:
+            # check if cRule is empty, if not emppty
+            if collection[2] is not None:
+                # update the number of label covered by the rule
+                # num_label_covered by cRule - 1
+                CARs_list[collection[2]].num_label_covered[collection[1]] -= 1
+            # num_label_covered by wRule + 1
+            CARs_list[collection[3]].num_label_covered[collection[1]] += 1
+        # if wRule is not marked
         else:
-            if entry[2] is not None:
-                w_set = find_wSet(U, data_list[entry[0]], CARs_list[entry[2]], CARs_list)
+            if collection[2] is not None:
+                # find all the cRules in U that wrongly classify the data case 
+                # and have a higher precedences than that of its cRule
+                # this is also called the allCoverRules() in the paper
+                wSet = find_wSet(U, data_list[collection[0]], CARs_list[collection[2]], CARs_list)
             else:
-                w_set = find_wSet(U, data_list[entry[0]], None, CARs_list)
-            for w in w_set:
-                CARs_list[w].replace.add((entry[2], entry[0], entry[1]))
-                CARs_list[w].num_label_covered[entry[1]] += 1
-            q |= w_set
+                wSet = find_wSet(U, data_list[collection[0]], None, CARs_list)
+            # iterate each rule w in the wSet
+            for rule_w in wSet:
+                # the rule_w may replace cRule to cover the data case as they have higher precedences
+                CARs_list[rule_w].replace.add((collection[2], collection[0], collection[1]))
+                # the numbrt of label covered count by rule_w + 1 as the rule_w may cover the data case
+                CARs_list[rule_w].num_label_covered[collection[1]] += 1
+            # Q union wSet as Q should contains all the rules to be used to build the classifier_M2
+            Q |= wSet
 
-    # stage 3
-    rule_errors = 0
-    q = sort_with_index(q, CARs_list)
-    data_cases_covered = list([False] * len(data_list))
-    for r_index in q:
-        if CARs_list[r_index].num_label_covered[CARs_list[r_index].class_label] != 0:
-            for entry in CARs_list[r_index].replace:
-                if data_cases_covered[entry[1]]:
-                    CARs_list[r_index].num_label_covered[entry[2]] -= 1
+    # Stage 3 in the paper
+    # Choose a set of potential rules to form the classifier_M2
+    num_rule_errors = 0
+    data_size = len(data_list)
+    # Sort the Q according to relation ">"
+    Q = sort_CARs(Q, CARs_list)
+    # Initialize all cover to Flase
+    data_line_covered = list([False] * data_size)
+    for rule_index in Q:
+        # If the rule no longer classifies any data cass, we discard it.
+        # Otherwise the rule will be used for the classifier_M2.
+        if CARs_list[rule_index].num_label_covered[CARs_list[rule_index].label] != 0:
+            # the rule will try to replace all the rules in the CARs_list[rule_index].replace
+            # as the rule precedess them
+            for entry in CARs_list[rule_index].replace:
+                # if the data case line has been covered by a previous rule
+                # the current rule will replace previous rule to cover the case
+                if data_line_covered[entry[1]]:
+                    # update the num_label_covered by the current rule
+                    CARs_list[rule_index].num_label_covered[entry[2]] -= 1
                 else:
+                    # the current rule will replace the previous rule to cover the data case line
                     if entry[0] is not None:
+                        # update the num_label_covered by the previous rule
                         CARs_list[entry[0]].num_label_covered[entry[2]] -= 1
-            for i in range(len(data_list)):
-                datacase = data_list[i]
-                if datacase:
-                    is_satisfy_value = CBA_CB_M1.check_cover(datacase, CARs_list[r_index])
-                    if is_satisfy_value:
-                        data_list[i] = []
-                        data_cases_covered[i] = True
-            rule_errors += count_rule_errors(CARs_list[r_index], data_list)
+            # iterae through each data case line
+            for data_index in range(data_size):
+                data_line = data_list[data_index]
+                if data_line:
+                    is_covered = CBA_CB_M1.check_cover(data_line, CARs_list[rule_index])
+                    # if True
+                    if is_covered:
+                        data_list[data_index] = []
+                        # update the covered status to True
+                        data_line_covered[data_index] = True
+            # for each rule, update the number of rule errors
+            num_rule_errors += count_rule_errors(CARs_list[rule_index], data_list)
+            # update the label count
             label_count = find_label_count(data_list)
-            default_label = default_label_selection(class_distribution)
-            default_errors = count_default_label_errors(default_label, label_count)
-            total_errors = rule_errors + default_errors
-            classifier.add(CARs_list[r_index], default_class, total_errors)
-    classifier.discard()
+            default_label = default_label_selection(label_count)
+            # count the total number of errors that the selected default label will make
+            # in the remainig data_list
+            default_label_errors = count_default_label_errors(default_label, label_count)
+            # calculate total errors that the seleced rules and the default label will make
+            total_errors = num_rule_errors + default_label_errors
+            # add them to the classifier_M2
+            classifier_M2.add(CARs_list[rule_index], default_class, total_errors)
+    # discard all the rules introduce more errors, and return the final classifier
+    classifier_M2.rule_cleaning()
 
-    return classifier
+    return classifier_M2
 
 
 # just for test
@@ -362,13 +409,13 @@ if __name__ == "__main__":
     minsup = 0.15
     minconf = 0.6
     cars = cba_rg.rule_generator(data_list, minsup, minconf)
-    classifier = build_classifier_M2(cars, data_list)
-    classifier.print()
+    classifier_M2 = build_classifier_M2(cars, data_list)
+    classifier_M2.print()
 
     print()
     data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
                [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
     cars.prune_rules(data_list)
     cars.rules = cars.pruned_rules
-    classifier = build_classifier_M2(cars, data_list)
-    classifier.print()
+    classifier_M2 = build_classifier_M2(cars, data_list)
+    classifier_M2.print()
