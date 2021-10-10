@@ -129,7 +129,7 @@ def sort_CARs(car):
                 if len(r1.cond_set) < len(r2.cond_set):   # 3. but r1 is generated earlier than r2
                     # r1 have a higher precedence than r2, r1 > r2
                     return -1
-                elif len(a.cond_set) == len(b.cond_set):
+                elif len(r1.cond_set) == len(r2.cond_set):
                     return 0
                 else:
                     return 1
@@ -138,7 +138,7 @@ def sort_CARs(car):
         else:
             return -1
 
-    rule_list = list(car.rules)
+    rule_list = list(car.car_rule_set)
     # sort the list of generated CARs
     rule_list.sort(key=cmp_to_key(compare_rules))
     return rule_list
