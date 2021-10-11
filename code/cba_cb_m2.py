@@ -11,6 +11,7 @@ Output: classifier_M2
 import sys
 import ruleitem
 import CBA_CB_M1
+import rulegenerator
 from functools import cmp_to_key
 
 
@@ -43,7 +44,7 @@ class Classifier_M2:
         # fine the rule's index position
         position = self.num_errors_list.index(min_errors)
         # discard all the rules after
-        self.rule_list = self.rule_list[:(index + 1)]
+        self.rule_list = self.rule_list[:(position + 1)]
         self.num_errors_list = None
         # assign the default label 
         # to be the label at the same position index as the rule in the default_label_list
@@ -140,7 +141,7 @@ def compare_rules(r1, r2):
     # 2. confidences are the same
     elif r1.confidence == r2.confidence:
         # but support of r2 > r1, r2 have higher precedence
-        if rule2.support > rule1.support:       
+        if r2.support > r1.support:       
             return -1
         # 3. confidence and support are the same, 
         elif r1.support == r2.support:
@@ -181,7 +182,10 @@ def find_label_count(data_list):
     # in the case if there are no data in the data_list
     if len(data_list) <= 0:
         label_count = None
-
+    # can be removed
+    while [] in data_list:
+        data_list.remove([])
+        
     label_column = [x[-1] for x in data_list]
     labels = set(label_column)
     for label in labels:
@@ -275,10 +279,10 @@ def build_classifier_M2(CARs, data_list):
     to build the compelete classifier. """
     classifier_M2 = Classifier_M2()
 
-    CARs_list = CBA_CB_M1.sort_CARs(cars)
+    CARs_list = CBA_CB_M1.sort_CARs(CARs)
     CARs_length = len(CARs_list)
     for index in range(CARs_length):
-        CARs_list[index] = ruleitem_to_rulerule(CARs_list[index], data_list)
+        CARs_list[index] = ruleitem_to_rule(CARs_list[index], data_list)
 
     # Stage 1 in the paper
     # Q is the set of cRules that have a higher precedence than their corresponding wRules
@@ -373,7 +377,7 @@ def build_classifier_M2(CARs, data_list):
                         # update the num_label_covered by the previous rule
                         CARs_list[entry[0]].num_label_covered[entry[2]] -= 1
             # iterae through each data case line
-            for data_index in range(data_size):
+            for data_index in range(len(data_list)):
                 data_line = data_list[data_index]
                 if data_line:
                     is_covered = CBA_CB_M1.check_cover(data_line, CARs_list[rule_index])
@@ -393,7 +397,7 @@ def build_classifier_M2(CARs, data_list):
             # calculate total errors that the seleced rules and the default label will make
             total_errors = num_rule_errors + default_label_errors
             # add them to the classifier_M2
-            classifier_M2.add(CARs_list[rule_index], default_class, total_errors)
+            classifier_M2.rule_insertion(CARs_list[rule_index], default_label, total_errors)
     # discard all the rules introduce more errors, and return the final classifier
     classifier_M2.rule_cleaning()
 
@@ -402,20 +406,22 @@ def build_classifier_M2(CARs, data_list):
 
 # just for test
 if __name__ == "__main__":
-    import cba_rg
 
     data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
                [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
     minsup = 0.15
     minconf = 0.6
-    cars = cba_rg.rule_generator(data_list, minsup, minconf)
-    classifier_M2 = build_classifier_M2(cars, data_list)
+    CARs = rulegenerator.rule_generator_main(data_list, minsup, minconf)
+    classifier_M2 = build_classifier_M2(CARs, data_list)
     classifier_M2.print()
 
     print()
     data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
                [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    cars.prune_rules(data_list)
-    cars.rules = cars.pruned_rules
-    classifier_M2 = build_classifier_M2(cars, data_list)
+    CARs.prune_rules(data_list)
+    CARs.CARs_rule = CARs.pruned_CARs
+    classifier_M2 = build_classifier_M2(CARs, data_list)
     classifier_M2.print()
+    
+    
+       

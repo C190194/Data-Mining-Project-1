@@ -1,4 +1,4 @@
-import cba_rg
+import rulegenerator
 from functools import cmp_to_key
 import sys
 
@@ -126,10 +126,10 @@ def sort_CARs(car):
                 return 1
             # if both support and confidence are the same
             elif r1.support == r2.support:
-                if len(r1.cond_set) < len(r2.cond_set):   # 3. but r1 is generated earlier than r2
+                if len(r1.condset) < len(r2.condset):   # 3. but r1 is generated earlier than r2
                     # r1 have a higher precedence than r2, r1 > r2
                     return -1
-                elif len(r1.cond_set) == len(r2.cond_set):
+                elif len(r1.condset) == len(r2.condset):
                     return 0
                 else:
                     return 1
@@ -138,7 +138,7 @@ def sort_CARs(car):
         else:
             return -1
 
-    rule_list = list(car.car_rule_set)
+    rule_list = list(car.CARs_rule)
     # sort the list of generated CARs
     rule_list.sort(key=cmp_to_key(compare_rules))
     return rule_list

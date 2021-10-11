@@ -4,7 +4,7 @@ class RuleItem:
     Input: condset which include a set of items, label and the data_list.
     Output: a ruleitem with the value of condsupCount, rulesupCount, support and confidence. 
     """
-    def __init__(self, cond_set, class_label, dataset):
+    def __init__(self, condset, label, data_list):
         """ According to the paper, each frequent k-ruleitems consists of the following:
         condset: a dictiondary that has key-value pair {"item name: value, item name: value...},
         where the item name are name of the column attributes.
