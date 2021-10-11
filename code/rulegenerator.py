@@ -226,8 +226,8 @@ if __name__ == "__main__":
     import readfile
     import preprocessing
     
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.names'
+    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/led7.data'
+    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/led7.names'
     data_list = readfile.read_data_file(test_data_path)
     data_list, test_attributes, test_attribute_types = readfile.read_files(test_data_path, test_names_path)
     data_list = preprocessing.preprocessing_main(data_list, test_attributes, test_attribute_types)
@@ -235,6 +235,7 @@ if __name__ == "__main__":
     minsup = 0.1
     minconf = 0.5
     CARs = rule_generator_main(data_list, minsup, minconf)
+    print("BEGIN:", CARs)
 
     print("CARs:")
     CARs.print_CARs()

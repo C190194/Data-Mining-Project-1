@@ -91,7 +91,7 @@ def cross_validattion_M2_without_pruning(data_path, names_path, minsup=0.01, min
     
     
 
-def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf=0.5):
+def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.1, minconf=0.5):
     """ 10-fold cross-validation on CBA-CB-M2 Classifier with rule pruning. """
     data_list, attributes, attribute_types = read_files(data_path, names_path)
     random.shuffle(data_list)
@@ -158,8 +158,8 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf
 # test entry goes here
 if __name__ == "__main__":
     # using the relative path, all data sets are stored in datasets directory
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/balloons.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/balloons.names'
+    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/tic-tac-toe.data'
+    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/tic-tac-toe.names'
 
     # cross_validattion_M2_without_pruning(test_data_path, test_names_path)
     cross_validation_M2_with_pruning(test_data_path, test_names_path)
