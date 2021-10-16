@@ -101,8 +101,7 @@ class CARs:
     def join(self, CARs, min_support, min_confidence):
         for item in CARs.CARs_rule:
             self.add_car_rule(item, min_support, min_confidence)
-
-
+            
 # *** need to consider more
 def pruning(rule, data_list):
     import sys
@@ -172,16 +171,16 @@ def join(r1, r2, data_list):
     return new_ruleitem
 
 
-# similar to Apriori-gen in algorithm Apriori
 def candidateGen(frequentRIs, data_list):
+    """ This is similar to the Aprior-gen in Apriori algorithm. """
     results = FrequentRISet()
     for r1 in frequentRIs.rule_set:
         for r2 in frequentRIs.rule_set:
             new_ruleitem = join(r1, r2, data_list)
             if new_ruleitem: # not null
                 results.add(new_ruleitem)
-                #if returned_frequentRIs.get_num() >= 1000: # *** DELETE
-                    #return returned_frequentRIs
+                if results.get_num() >= 1000:
+                    return results
     return results
 
 
@@ -202,23 +201,28 @@ def rule_generator_main(data_list, min_support, min_confidence):
                     new_frequentRIs.add(rule_item)
     new_car.copy_freq_rules(new_frequentRIs, min_support, min_confidence)
     # stores all the CARs 1-ruleitems
-    all_cars = new_car
+    all_CARs = new_car
     # does not need to prune here because there is only one attribute in the condset
 
-    current_cars_number = len(all_cars.CARs_rule) # cannot exceed 80000
-    while new_frequentRIs.get_num() > 0 and current_cars_number <= 80000: # same ristriction as the paper
-        candi_FreqRIs = candidateGen(new_frequentRIs, data_list)
+    previous_CARs_num = 0
+    current_CARs_number = len(all_CARs.CARs_rule) # cannot exceed 80000
+    # to apply the same ristriction as the paper
+    candidate_FreqRIs = candidateGen(new_frequentRIs, data_list)
+    while new_frequentRIs.get_num() > 0 and current_CARs_number <= 80000 \
+                                      and (current_CARs_number - previous_CARs_num) >= 10: 
+        candidate_FreqRIs = candidateGen(new_frequentRIs, data_list)
         new_frequentRIs = FrequentRISet()
         new_car = CARs()
         # add the candidate ruleitems that meet the basic requirements
-        for item in candi_FreqRIs.rule_set:
+        for item in candidate_FreqRIs.rule_set:
             if item.support >= min_support:
                 new_frequentRIs.add(item)
         new_car.copy_freq_rules(new_frequentRIs, min_support, min_confidence)
-        all_cars.join(new_car, min_support, min_confidence)
-        current_cars_number = len(all_cars.CARs_rule)
+        all_CARs.join(new_car, min_support, min_confidence)
+        previous_CARs_num = current_CARs_number
+        current_CARs_number = len(all_CARs.CARs_rule)
 
-    return all_cars
+    return all_CARs
 
 
 # just for test
