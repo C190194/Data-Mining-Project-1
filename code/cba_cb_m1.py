@@ -143,47 +143,4 @@ def sort_CARs(car):
     rule_list.sort(key=cmp_to_key(compare_rules))
     return rule_list
 
-"""
-# main method of CBA-CB: M1
-def classifier_builder_m1(cars, dataset):
-    classifier = Classifier()
-    cars_list = sort(cars)
-    for rule in cars_list:
-        temp = []
-        mark = False
-        for i in range(len(dataset)):
-            is_satisfy_value = is_satisfy(dataset[i], rule)
-            if is_satisfy_value is not None:
-                temp.append(i)
-                if is_satisfy_value:
-                    mark = True
-        if mark:
-            temp_dataset = list(dataset)
-            for index in temp:
-                temp_dataset[index] = []
-            while [] in temp_dataset:
-                temp_dataset.remove([])
-            dataset = temp_dataset
-            classifier.insert(rule, dataset)
-    classifier.discard()
-    return classifier
 
-
-# just for test
-if __name__ == '__main__':
-    dataset = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
-               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    minsup = 0.15
-    minconf = 0.6
-    cars = cba_rg.rule_generator(dataset, minsup, minconf)
-    classifier = classifier_builder_m1(cars, dataset)
-    classifier.print()
-
-    print()
-    dataset = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
-               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    cars.prune_rules(dataset)
-    cars.rules = cars.pruned_rules
-    classifier = classifier_builder_m1(cars, dataset)
-    classifier.print()
-"""
