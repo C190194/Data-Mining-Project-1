@@ -336,7 +336,7 @@ def build_classifier_M2(CARs, data_list):
         # if wRule is not marked
         else:
             if collection[2] is not None:
-                # find all the wRules in U that wrongly classify the data case 
+                # find all the cRules in U that wrongly classify the data case 
                 # and have a higher precedences than that of its cRule
                 # this is also called the allCoverRules() in the paper
                 wSet = find_wSet(U, data_list[collection[0]], CARs_list[collection[2]], CARs_list)
