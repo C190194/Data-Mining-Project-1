@@ -104,7 +104,7 @@ def binary_split(original_datablock):
         # the value is an acceptable candidate for boundary
         if entropy_gain >= minimum_requirement:
 			 # append the list of value to the wall
-            split_point.append([value, entropy_gain])  
+            split_point.append([value, entropy_gain, left_datablock, right_datablock])  
 
     if split_point:    # is not empty
 		# sort the value in aescending order by "entropy_gain"
@@ -145,15 +145,18 @@ def complete_split(original_datablock):
     
 # just for test
 if __name__ == '__main__':
-    import readfile
-    
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.names'
-    data_list = readfile.read_data_file(test_data_path)
+    import random
 
-    test_block = DataBlock(data_list)
-    split_points = complete_split(test_block)
-    print(split_points)     
+    test_data = []
+    for i in range(100):
+        test_data.append([random.random(), random.choice(range(0, 2))])
+        test_data.append([random.random() + 1, random.choice(range(2, 4))])
+        test_data.append([random.random() + 2, random.choice(range(4, 6))])
+        test_data.append([random.random() + 3, random.choice(range(6, 8))])
+
+    test_block = DataBlock(test_data)
+    test_walls = complete_split(test_block)
+    print(test_walls)        # should be [1+e, 2+e, 3+e], where e is a number very close to 0
     
     
 

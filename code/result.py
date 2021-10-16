@@ -53,10 +53,12 @@ def cross_validattion_M2_without_pruning(data_path, names_path, minsup=0.01, min
         # prepare training and testing data
         training_data = data_list[:split_point[k]] + data_list[split_point[k+1]:]
         testing_data = data_list[split_point[k]:split_point[k+1]]
+        print("splitting done")
 
         # compute the single and total runtime for rule generator
         start_time = time.time()
         CARs = rule_generator_main(training_data, minsup, minconf)
+        print("rule generator done")
         end_time = time.time()
         rule_gengerator_runtime = end_time - start_time
         rule_gengerator_totalt_runtime += rule_gengerator_runtime
@@ -105,7 +107,7 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.1, minconf=
     split_point.append(data_size)
 
     # Initialization    
-    rule_gengerator_totalt_runtime = 0
+    rule_generator_total_runtime = 0
     M2_total_time = 0
     total_num_CARs = 0
     total_num_M2classifier_rules = 0
@@ -124,7 +126,7 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.1, minconf=
         CARs.CARs_rule = CARs.pruned_CARs
         end_time = time.time()
         rule_gengerator_runtime = end_time - start_time
-        rule_gengerator_total_runtime += rule_gengerator_runtime
+        rule_generator_total_runtime += rule_gengerator_runtime
 
         # compute the single and total runtime for classifier M2 with rule pruning
         start_time = time.time()
@@ -150,7 +152,7 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.1, minconf=
 
     print("\nAverage CBA-CB M2's error rate with rule pruning: %.1lf%%" % (total_error_rate / 10 * 100))
     print("Average No. of CARs generated with rule pruning: %d" % int(total_num_CARs / 10))
-    print("Average CBA-RG's run time with rule pruning: %.2lf s" % (rule_gengerator_total_runtime / 10))
+    print("Average CBA-RG's run time with rule pruning: %.2lf s" % (rule_generator_total_runtime / 10))
     print("Average CBA-CB M2's run time with rule pruning: %.2lf s" % (M2_total_time / 10))
     print("Average No. of rules in classifier of CBA-CB M2 with rule pruning: %d" % int(total_num_M2classifier_rules / 10))
 
@@ -158,11 +160,11 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.1, minconf=
 # test entry goes here
 if __name__ == "__main__":
     # using the relative path, all data sets are stored in datasets directory
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.names'
+    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.data'
+    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.names'
 
-    # cross_validattion_M2_without_pruning(test_data_path, test_names_path)
-    cross_validation_M2_with_pruning(test_data_path, test_names_path)
+    cross_validattion_M2_without_pruning(test_data_path, test_names_path)
+    #cross_validation_M2_with_pruning(test_data_path, test_names_path)
 
 
 
