@@ -144,7 +144,7 @@ def preprocessing_main(data, attributes, attribute_types):
         # if the empty value is more than half
         if empty_value_rate > 0.5:
             # append the column index into discard_list as we will discard the whole column later
-            discard_list.append(i)
+            discard_list.append(data_column)
             continue
         # if there are only a few empty values
         elif empty_value_rate > 0:
