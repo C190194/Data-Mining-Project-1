@@ -84,16 +84,3 @@ class RuleItem:
         print(condset_content + ' -> (Class label: ' + str(self.label) + ')')
 
 
-# just for test
-if __name__ == '__main__':
-    condset = {0: 1, 1: 1}
-    label = 1
-    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
-               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    ruleitem = RuleItem(condset, label, data_list)
-    ruleitem.print_ruleitem()
-    ruleitem.print_rule()
-    print('condsupCount =', ruleitem.condsupCount)   # should be 3
-    print('rulesupCount =', ruleitem.rulesupCount)   # should be 2
-    print('support =', ruleitem.support)               # should be 0.2
-    print('confidence =', ruleitem.confidence)         # should be 0.667

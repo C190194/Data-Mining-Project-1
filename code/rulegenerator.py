@@ -16,7 +16,7 @@ class FrequentRuleitemSet:
         self.rule_set = set()
 
     
-    def get_num(self):
+    def get_size(self):
         """ Get size of set. """
         return len(self.rule_set)
 
@@ -179,7 +179,7 @@ def candidateGen(frequent_ruleitems, data_list):
             if new_ruleitem:
                 returned_frequent_ruleitems.add(new_ruleitem)
                  # do not allowed to store more than 1000 ruleitems
-                if returned_frequent_ruleitems.get_num() >= 1000:     
+                if returned_frequent_ruleitems.get_size() >= 1000:     
                     return returned_frequent_ruleitems
     return returned_frequent_ruleitems
 
@@ -204,7 +204,7 @@ def rule_generator_main(data_list, min_support, min_confidence):
 
     previous_CARs_num = 0
     current_CARs_num = len(all_CARs.CARs_rule)
-    while frequent_ruleitems.get_num() > 0 and current_CARs_num <= 2000 and \
+    while frequent_ruleitems.get_size() > 0 and current_CARs_num <= 2000 and \
                     (current_CARs_num - previous_CARs_num) >= 10:
         candidate = candidateGen(frequent_ruleitems, data_list)
         frequent_ruleitems = FrequentRuleitemSet()
@@ -220,10 +220,10 @@ def rule_generator_main(data_list, min_support, min_confidence):
     return all_CARs
 
 
-# just for test
+# Testing 
 if __name__ == "__main__":
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/zoo.names'
+    test_data_path = 'dataset/iris.data'
+    test_names_path = 'dataset/iris.names'
     data_list, attributes, attribute_types = read_files(test_data_path, test_names_path)
     data_list = preprocessing_main(data_list, attributes, attribute_types)
     min_support = 0.01

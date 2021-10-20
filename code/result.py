@@ -1,11 +1,10 @@
 import time
 import random
 from readfile import read_files
-from preprocessing import preprocessing_main
-from rulegenerator import rule_generator_main
 from CBA_CB_M1 import check_cover
 from CBA_CB_M2 import build_classifier_M2
-
+from preprocessing import preprocessing_main
+from rulegenerator import rule_generator_main
 
 def calcualte_accuracy(classifier, data_list):
     """ Calculate the error rate of the classifier on the data_list used. """
@@ -116,16 +115,12 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf
         # prepare training and testing data
         training_data = data_list[:split_point[k]] + data_list[split_point[k+1]:]
         testing_data = data_list[split_point[k]:split_point[k+1]]
-        print("splitting done")
         
         # compute the single and total runtime for rule generator with rule pruning
         start_time = time.time()
         CARs = rule_generator_main(training_data, minsup, minconf)
-        print("rule generator done")
         CARs.prune_rules(training_data)
-        print("pruned rule done")
         CARs.CARs_rule = CARs.pruned_CARs
-        print("pruned rules returned")
         end_time = time.time()
         rule_gengerator_runtime = end_time - start_time
         rule_generator_total_runtime += rule_gengerator_runtime
@@ -133,7 +128,6 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf
         # compute the single and total runtime for classifier M2 with rule pruning
         start_time = time.time()
         M2_pruning = build_classifier_M2(CARs, training_data)
-        print("build classifier done.")
         end_time = time.time()
         M2_runtime = end_time - start_time
         M2_total_time += M2_runtime
@@ -160,13 +154,14 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf
     print("Average No. of rules in classifier of CBA-CB M2 with rule pruning: %d" % int(total_num_M2classifier_rules / 10))
 
 
+# Testing
 if __name__ == "__main__":
-    # using the relative path, all data sets are stored in datasets directory
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/wine.names'
+    # All data sets are stored in dataset directory, please ensure you have entered the correct path
+    data_path = 'dataset/car.data'
+    names_path = 'dataset/car.names'
 
-    #cross_validattion_M2_without_pruning(test_data_path, test_names_path)
-    cross_validation_M2_with_pruning(test_data_path, test_names_path)
+    cross_validattion_M2_without_pruning(data_path, names_path)
+    #cross_validation_M2_with_pruning(data_path, names_path)
 
 
 

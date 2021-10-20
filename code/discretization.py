@@ -145,18 +145,13 @@ def complete_split(original_datablock):
     
 # just for test
 if __name__ == '__main__':
-    import random
-
-    test_data = []
-    for i in range(100):
-        test_data.append([random.random(), random.choice(range(0, 2))])
-        test_data.append([random.random() + 1, random.choice(range(2, 4))])
-        test_data.append([random.random() + 2, random.choice(range(4, 6))])
-        test_data.append([random.random() + 3, random.choice(range(6, 8))])
-
-    test_block = DataBlock(test_data)
-    test_walls = complete_split(test_block)
-    print(test_walls)        # should be [1+e, 2+e, 3+e], where e is a number very close to 0
+    import readfile       
+    test_data_path = 'dataset/iris.data'
+    test_names_path = 'dataset/iris.names'
+    data_list = readfile.read_data_file(test_data_path)
+    data_block = DataBlock(data_list)
+    test_split_points = complete_split(data_block)
+    print(test_split_points)
     
     
 

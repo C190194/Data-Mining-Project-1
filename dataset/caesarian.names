@@ -1,2 +1,0 @@
-Age,Delivery number,Delivery time,Blood of Pressure,Heart Problem,Caesarian
-numerical,integer,integer,integer,integer,label

@@ -1,10 +1,11 @@
 """
+Input: a set of CARs generated from rule_generator_main (in rulegenerator.py) and the data_list obtained from preprocessing.py
+
     Implementation of CBA-CB_M2 Classifier. The main function contains three stages. 
-    For stage 1, we scan the whole database to find the cRule and wRule, get the set Q, U and A at the same
+    For stage 1, we scan the whole database to find the cRule and wRule, and obtain the set Q, U and A at the same
     time. In stage 2, for each data case d that we could not decide which rule should cover it in stage 1, we go through d
     again to find all rules that classify it wrongly and have a higher precedence than the corresponding cRule of d.
     Finally, in stage 3, we choose the final set of rules to form our final classifer.
-Input: a set of CARs generated from rule_generator (see cab_rg.py) and a data_list got from preprocessing.py
 
 Output: classifier_M2
 """
@@ -404,24 +405,7 @@ def build_classifier_M2(CARs, data_list):
     return classifier_M2
 
 
-# just for test
-if __name__ == "__main__":
 
-    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
-               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    minsup = 0.15
-    minconf = 0.6
-    CARs = rulegenerator.rule_generator_main(data_list, minsup, minconf)
-    classifier_M2 = build_classifier_M2(CARs, data_list)
-    classifier_M2.print()
-
-    print()
-    data_list = [[1, 1, 1], [1, 1, 1], [1, 2, 1], [2, 2, 1], [2, 2, 1],
-               [2, 2, 0], [2, 3, 0], [2, 3, 0], [1, 1, 0], [3, 2, 0]]
-    CARs.prune_rules(data_list)
-    CARs.CARs_rule = CARs.pruned_CARs
-    classifier_M2 = build_classifier_M2(CARs, data_list)
-    classifier_M2.print()
     
     
        

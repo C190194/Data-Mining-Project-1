@@ -181,10 +181,10 @@ def preprocessing_main(data, attributes, attribute_types):
     return data
 
 
-# just for test
+# Testing
 if __name__ == '__main__':    
-    test_data_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/pima.data'
-    test_names_path = 'C:/Users/XPS/Desktop/Uni drives me crazy/Y3S1/CZ4032 Data Analytics and Mining/Data-Mining-Project-1/dataset/pima.names'
+    test_data_path = 'dataset/pima.data'
+    test_names_path = 'dataset/pima.names'
     test_data, test_attributes, test_attributes_types = readfile.read_files(test_data_path, test_names_path)
     proprocessed_test_data = preprocessing_main(test_data, test_attributes, test_attributes_types)
 

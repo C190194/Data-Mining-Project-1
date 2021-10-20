@@ -21,7 +21,7 @@ def check_cover(data_line, rule):
 
 class Classifier_M1:
     """
-    Build the class for classifier. 
+    Build the class for classifier M1. 
     The rule_list and default_class are useful for outer code.
     """
     def __init__(self):
