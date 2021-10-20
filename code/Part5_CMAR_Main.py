@@ -1,9 +1,9 @@
 import readfile
 import preprocessing
 
-import new_FP_Tree
-import new_CR_Tree
-import new_Classifier
+import Part5_FP_Tree
+import Part5_CR_Tree
+import Part5_Classifier
 
 import random
 import time
