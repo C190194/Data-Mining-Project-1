@@ -54,5 +54,6 @@ if __name__ == '__main__':
     test_data_path = 'dataset/pima.data'
     test_names_path = 'dataset/pima.names'
     test_data, test_attributes, test_attribute_types = read_files(test_data_path, test_names_path)
-    result_data = preprocessing.preprocessing_main(test_data, test_attributes, test_attribute_types)
-    print(result_data)
+    print("Data list: ",test_data)
+    print("Attributes: ", test_attributes)
+    print("Attribute types: ", test_attribute_types)

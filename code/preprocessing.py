@@ -27,7 +27,7 @@ def complete_discretization(data_list, column, split_points):
 	split_point_size = len(split_points)
 	for row in range(num_rows):
 		# if the data > the last boundary
-		if data_list[row][column] > split_points[split_point_size - 1]:
+		if data_list[row][column] > split_points[split_point_size-1]:
 			# assign the new value to be the index of the last interval
 			data_list[row][column] = split_point_size + 1
         # iterate through each splliting point 
@@ -110,6 +110,6 @@ if __name__ == '__main__':
     test_names_path = 'dataset/iris.names'
     test_data, test_attributes, test_attributes_types = readfile.read_files(test_data_path, test_names_path)
     proprocessed_test_data = preprocessing_main(test_data, test_attributes, test_attributes_types)
-
+    print(proprocessed_test_data)
 
    

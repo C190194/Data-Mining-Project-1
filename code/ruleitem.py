@@ -14,8 +14,8 @@ class RuleItem:
         self.condset = condset
         self.label = label
         self.condsupCount, self.rulesupCount = self.calculate_supCount(data_list)
-        self.support = self.calculate_support(data_list)
         self.confidence = self.calculate_confidence()
+        self.support = self.calculate_support(data_list)
 
 
     def calculate_supCount(self, data_list):
@@ -43,6 +43,15 @@ class RuleItem:
                     # rulesupCpunt + 1
                     rulesupCount += 1
         return condsupCount, rulesupCount
+        
+    
+    def calculate_confidence(self):
+        """ Calculate the confidence. """
+        if self.condsupCount == 0:
+            return 0
+        else:
+            # by formula
+            return self.rulesupCount / self.condsupCount
 
 
     def calculate_support(self, data_list):
@@ -53,34 +62,6 @@ class RuleItem:
         return support
 
 
-    def calculate_confidence(self):
-        """ Calculate the confidence. """
-        if self.condsupCount == 0:
-            return 0
-        else:
-            # by formula
-            return self.rulesupCount / self.condsupCount
 
-
-    def print_ruleitem(self):
-        """ Function to print out the rule item. """ 
-        condset_content = ''
-        for kv_pair in self.condset:
-            condset_content += '(' + str(kv_pair) + ', ' + str(self.condset[kv_pair]) + '), '
-        # remove the extra 2 characters, which is the ', '
-        condset_content = condset_content[:-2]
-        print('<({' + condset_content + '}, ' + 'condsupCount:' + str(self.condsupCount) + '), (' +
-              '(Class label: ' + str(self.label) + '), ' + 'sulesupCount:' + str(self.rulesupCount) + ')>')
-
-
-    def print_rule(self):
-        """ Function to print out the rule. """ 
-        condset_content = ''
-        for kv_pair in self.condset:
-            condset_content += '(' + str(kv_pair) + ', ' + str(self.condset[kv_pair]) + '), '
-        # remove the extra 2 characters, which is the ', '
-        condset_content = '{' + condset_content[:-2] + '}'
-        # condset -> y
-        print(condset_content + ' -> (Class label: ' + str(self.label) + ')')
 
 
