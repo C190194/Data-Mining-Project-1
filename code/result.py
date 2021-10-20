@@ -1,7 +1,7 @@
 import time
 import random
 from readfile import read_files
-from CBA_CB_M1 import check_cover
+from CBA_CB_M2 import check_cover
 from CBA_CB_M2 import build_classifier_M2
 from preprocessing import preprocessing_main
 from rulegenerator import rule_generator_main
@@ -27,7 +27,7 @@ def calcualte_accuracy(classifier, data_list):
     return 1-(num_errors / data_size)
 
 
-def cross_validattion_M2_without_pruning(data_path, names_path, minsup=0.01, minconf=0.5):
+def cross_validation_M2_without_pruning(data_path, names_path, minsup=0.01, minconf=0.5):
     """ 10-fold cross-validation on CBA-CB-M2 Classifier withought rule pruning. """
     data_list, attributes, attribute_types = read_files(data_path, names_path)
     random.shuffle(data_list)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     data_path = 'dataset/car.data'
     names_path = 'dataset/car.names'
 
-    cross_validattion_M2_without_pruning(data_path, names_path)
+    cross_validation_M2_without_pruning(data_path, names_path)
     #cross_validation_M2_with_pruning(data_path, names_path)
 
 

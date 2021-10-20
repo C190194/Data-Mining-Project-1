@@ -11,9 +11,55 @@ Output: classifier_M2
 """
 import sys
 import ruleitem
-import CBA_CB_M1
 import rulegenerator
 from functools import cmp_to_key
+
+def check_cover(data_line, rule):
+    """ Check whether the rule covers a single line in the data_list,
+    the line is each row in the original data_list """
+    for item in rule.condset:
+        # check if  the dataline and the LHS of the rule are the same
+        # if different, return None
+        if data_line[item] != rule.condset[item]:
+            return None
+    # if same and they belong to the same class label, return ture
+    if data_line[-1] == rule.label:
+        return True
+    # else return false
+    else:
+        return False
+
+def M1_sort_CARs(car):
+    """ Sort the list of generated class association rules in descending order.
+    The order is based on the relation ">" in precendence.
+    Return the sorted rule list. """
+    def compare_rules(r1, r2):
+        """ Compare the rules in CARs based on the article.
+        As we need to choose a set of high precedence rules for the classifier. """
+        if r2.confidence > r1.confidence:     # 1. the confidence of r2 > r1
+            # r2 have higher precendence than r1, meaning r2 > r1
+            return 1
+        elif r1.confidence == r2.confidence:
+            if r2.support > r1.support:       # 2. confidence of r1 and r2 are the same, but support of r2 > r1
+                return 1
+            # if both support and confidence are the same
+            elif r1.support == r2.support:
+                if len(r1.condset) < len(r2.condset):   # 3. but r1 is generated earlier than r2
+                    # r1 have a higher precedence than r2, r1 > r2
+                    return -1
+                elif len(r1.condset) == len(r2.condset):
+                    return 0
+                else:
+                    return 1
+            else:
+                return -1
+        else:
+            return -1
+
+    rule_list = list(car.CARs_rule)
+    # sort the list of generated CARs
+    rule_list.sort(key=cmp_to_key(compare_rules))
+    return rule_list
 
 
 class Classifier_M2:
@@ -100,7 +146,7 @@ def find_cRule_index(CARs_list, data):
         # if they belongs to the same class label
         if CARs_list[index].label == data[-1]:
             # check wether the rule in the cars_list cover the single data line
-            if CBA_CB_M1.check_cover(data, CARs_list[index]):
+            if check_cover(data, CARs_list[index]):
                 # if ture, return the index
                 return index
     return None
@@ -119,7 +165,7 @@ def find_wRule_index(CARs_list, data):
             # append the class label in the rule to the temporary data case
             temporary_data.append(CARs_list[index].label)
             # if the rule in CARs_list can cover the temporary data line
-            if CBA_CB_M1.check_cover(temporary_data, CARs_list[index]):
+            if check_cover(temporary_data, CARs_list[index]):
                 # return the index
                 return index
     return None
@@ -169,7 +215,7 @@ def find_wSet(U, data, cRule, CARs_list):
         # if the rule have higher precedences than cRule
         if compare_rules(CARs_list[index], cRule) > 0:
             # and it does not cover the data line
-            if CBA_CB_M1.check_cover(data, CARs_list[index]) == False:
+            if check_cover(data, CARs_list[index]) == False:
                 # add the index
                 wSet.add(index)
     return wSet
@@ -195,7 +241,7 @@ def find_label_count(data_list):
     return label_count
 
 
-def sort_CARs(Q, CARs_list):
+def M2_sort_CARs(Q, CARs_list):
     """ Sort the list of generated class association rules in descending order.
     The order is based on the relation ">" in precendence.
     Return the sorted rule list.
@@ -237,7 +283,7 @@ def count_rule_errors(rule, data_list):
     for line in data_list:
         if line:
             # check if it correcly classify the data
-            if CBA_CB_M1.check_cover(line, rule) == False:
+            if check_cover(line, rule) == False:
                 # if false, number of errors + 1
                 num_errors += 1
     return num_errors
@@ -279,8 +325,7 @@ def build_classifier_M2(CARs, data_list):
     """ This is the main function of the M2 classifier that combine everything
     to build the compelete classifier. """
     classifier_M2 = Classifier_M2()
-
-    CARs_list = CBA_CB_M1.sort_CARs(CARs)
+    CARs_list = M1_sort_CARs(CARs)
     CARs_length = len(CARs_list)
     for index in range(CARs_length):
         CARs_list[index] = ruleitem_to_rule(CARs_list[index], data_list)
@@ -357,7 +402,7 @@ def build_classifier_M2(CARs, data_list):
     num_rule_errors = 0
     data_size = len(data_list)
     # Sort the Q according to relation ">"
-    Q = sort_CARs(Q, CARs_list)
+    Q = M2_sort_CARs(Q, CARs_list)
     # Initialize all cover to Flase
     data_line_covered = list([False] * data_size)
     for rule_index in Q:
@@ -381,7 +426,7 @@ def build_classifier_M2(CARs, data_list):
             for data_index in range(len(data_list)):
                 data_line = data_list[data_index]
                 if data_line:
-                    is_covered = CBA_CB_M1.check_cover(data_line, CARs_list[rule_index])
+                    is_covered = check_cover(data_line, CARs_list[rule_index])
                     # if True
                     if is_covered:
                         data_list[data_index] = []

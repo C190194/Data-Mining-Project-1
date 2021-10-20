@@ -1,50 +1,6 @@
 import discretization
 import readfile
 
-# Obtain the mode value for a column of data list
-# Used for missing value 
-def find_mode(column_data):
-	""" Identify the mode of a numderical or categorical column
-		If there are more than 1 mode values having the same frequency
-		return the first one as mode
-		columns_data: a list column_data to find the mode """
-	mode = []
-	# count number of times each data shown
-	# the key is the value of data, value is it's respective frequency
-	data_frequency = dict((data, column_data.count(data)) for data in column_data)  
-	# get the max_frequency for the column
-	max_frequency = max(data_frequency.values())
-	# if max frequency is 1, means all data showed up for the same number of times
-	if max_frequency == 1:      
-		print("no mode")
-		return None
-	else:
-		for key, value in data_frequency.items():     
-			# if the frequency is the same as maximum frequency
-			if value == max_frequency:
-				mode.append(key)
-	return mode[0]  # return first number if has many modes
-
-
-# Replace data that have missing value with the mode value of the column
-def replace_missing_values(data_list, column):
-	""" Replace the '?' in missing value with the mode value of the column
-		data_list: the data list returned after reading the file
-		column: the index number of the column that have missing value """
-	# get the number of row in data_list
-	num_rows = len(data_list)
-    # get the data in each column
-	column_data = [x[column] for x in data_list]    
-	mode = find_mode(column_data)
-    # interate through each row within the same column
-	for row in range(num_rows):
-		# if there's missing value
-		if data_list[row][column] == '?':
-			# replace the '?' with the mode value of the column
-			data_list[row][column] = mode              
-	return data_list
-
-
 # Retrive the two columns of data for discretization
 # Combine the two columns
 def find_discretization_data(numerical_data_column, label_column):
@@ -109,22 +65,6 @@ def replace_with_integer(data_list, column):
     return data_list, classes_index
 
 
-
-def discard(data, discard_list):
-    """ Discard all the the column where the column_no is recorded in the discard_list
-    data: the original data_list
-    discard_list: a list of column index recording the columns needs to be discarded. """
-    size = len(data)
-    length = len(data[0])
-    data_result = []
-    for i in range(size):
-        data_result.append([])
-        for j in range(length):
-            if j not in discard_list:
-                data_result[i].append(data[i][j])
-    return data_result 
-
-
 # This is the main function in this file
 def preprocessing_main(data, attributes, attribute_types):
     """ The main function in this python file.
@@ -138,19 +78,6 @@ def preprocessing_main(data, attributes, attribute_types):
     # iterate through each attribute column in the data
     for column in range(num_columns - 1):
         data_column = [x[column] for x in data]
-        # handle missing values
-        # find the proportion of empty value in each column
-        empty_value_rate = data_column.count('?') / num_rows
-        # if the empty value is more than half
-        if empty_value_rate > 0.5:
-            # append the column index into discard_list as we will discard the whole column later
-            discard_list.append(data_column)
-            continue
-        # if there are only a few empty values
-        elif empty_value_rate > 0:
-            # fill the value with mode
-            data = replace_missing_values(data, column)
-            data_column = [x[column] for x in data]
         # discretization
         # if the type of data column is numerical
         if attribute_types[column] == 'numerical':
@@ -171,20 +98,14 @@ def preprocessing_main(data, attributes, attribute_types):
         elif attribute_types[column] == 'categorical':
             data, classes_index = replace_with_integer(data, column)
             # print out the classes and their assigned positive integer value
-            print("Categorical atribute with new values:", attributes[column] + ":", classes_index)   
-
-    # discard
-    if len(discard_list) > 0:
-        data = discard(data, discard_list)
-        print("discard:", discard_list)             # print out discard list
-        
+            print("Categorical atribute with new values:", attributes[column] + ":", classes_index)           
     return data
 
 
 # Testing
 if __name__ == '__main__':    
-    test_data_path = 'dataset/pima.data'
-    test_names_path = 'dataset/pima.names'
+    test_data_path = 'dataset/iris.data'
+    test_names_path = 'dataset/iris.names'
     test_data, test_attributes, test_attributes_types = readfile.read_files(test_data_path, test_names_path)
     proprocessed_test_data = preprocessing_main(test_data, test_attributes, test_attributes_types)
 
