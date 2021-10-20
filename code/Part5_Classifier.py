@@ -115,4 +115,3 @@ def classify(data_object, CR_tree_root, class_sup_dic, t ):
     result_class = max(class_weighted_x2_dic, key=class_weighted_x2_dic.get)
     return result_class
 
-""" Preprocess X^2 and max X^2 for every rule """
