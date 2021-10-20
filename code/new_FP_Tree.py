@@ -2,7 +2,7 @@
 from collections import OrderedDict
 
 from preprocessing import test
-import new_CR_Tree
+import Part5_CR_Tree
 
 """ Data structure for FP-Tree """
 class FPTNode:
