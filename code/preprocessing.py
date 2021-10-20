@@ -83,6 +83,7 @@ def preprocessing_main(data, attributes, attribute_types):
         if attribute_types[column] == 'numerical':
             discretization_data = find_discretization_data(data_column, label_column)
             datablock = discretization.DataBlock(discretization_data)
+            label_size = datablock.label_size
             split_points = discretization.complete_split(datablock)
             # if there are no split points return
             if len(split_points) == 0:
@@ -98,7 +99,9 @@ def preprocessing_main(data, attributes, attribute_types):
         elif attribute_types[column] == 'categorical':
             data, classes_index = replace_with_integer(data, column)
             # print out the classes and their assigned positive integer value
-            print("Categorical atribute with new values:", attributes[column] + ":", classes_index)           
+            print("Categorical atribute with new values:", attributes[column] + ":", classes_index) 
+    print("The number of distict class label in the dataset is:", label_size)  
+    print("Total number of attributes in the dataset: ", num_columns-1)        
     return data
 
 

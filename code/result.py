@@ -157,11 +157,11 @@ def cross_validation_M2_with_pruning(data_path, names_path, minsup=0.01, minconf
 # Testing
 if __name__ == "__main__":
     # All data sets are stored in dataset directory, please ensure you have entered the correct path
-    data_path = 'dataset/car.data'
-    names_path = 'dataset/car.names'
+    data_path = 'dataset/pima.data'
+    names_path = 'dataset/pima.names'
 
-    cross_validation_M2_without_pruning(data_path, names_path)
-    #cross_validation_M2_with_pruning(data_path, names_path)
+    #cross_validation_M2_without_pruning(data_path, names_path)
+    cross_validation_M2_with_pruning(data_path, names_path)
 
 
 

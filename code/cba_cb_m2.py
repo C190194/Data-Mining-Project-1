@@ -99,14 +99,6 @@ class Classifier_M2:
         self.default_label_list = None
         
 
-    def print(self):
-        """ A print function that print out all the selected rules 
-        and default class label in the classifier_M2. """
-        for rule in self.rule_list:
-            rule.print_rule()
-        print("Default class label:", self.default_label)
-
-
 class Rule(ruleitem.RuleItem):
     """
     Build a Rule class that inherite RuleItem class.

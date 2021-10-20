@@ -1,35 +1,6 @@
 import csv
 import preprocessing
 
-# Read the whole dataset and convert into a list.
-# filepath: directory of *.data file.
-def read_data_file(data_path):
-    """ Read the file with *.data and get the data in every linne
-    append the line in the data_list"""
-    data_list = []
-    with open(data_path, 'r') as data_file:
-        lines = csv.reader(data_file, delimiter=',')
-        for line in lines:
-            data_list.append(line)
-        while [] in data_list:
-            data_list.remove([])
-    return data_list
-    
-
-# Read the file ending with *.names
-# return the list of data attributes and their value type
-def read_names_file(names_path):
-	""" Read scheme file *.names and write down attribute names and value types.
-	   path: directory of *.names file. """
-	with open(names_path, 'r') as csv_file:
-		lines = csv.reader(csv_file, delimiter=',')
-		# Read the first line to get attributes name
-		attribute_names = next(lines) 
-		# Read the second line to get the value type for each attributes 
-		attribute_types = next(lines)  
-	return attribute_names, attribute_types
-
-
 def convert_to_numerical(data_list, attribute_types):
 	""" When the attribute type is numerical
 		convert value from string to float.
@@ -47,26 +18,41 @@ def convert_to_numerical(data_list, attribute_types):
 	return data_list
 
 
+# Main function: read the whole dataset and convert into a list.
 def read_files(data_path, names_path):
-	""" Main function in this python file, 
-		to get data list, attributes and ites respective value type.
-		data_file: directory of the *.data 
-		names_file: directory of the *.names file """
-	# get the data_list
-	data_list = read_data_file(data_path)
-	# get the attribute names and their respective types
-	attributes, attribute_types = read_names_file(names_path)
-	# covert the string type numerical to float type
-	data = convert_to_numerical(data_list, attribute_types)
-	# return the preprocessed data
-	return data, attributes, attribute_types
-
+    """ filepath: directory of *.data file and *.name file. """
+    # Read the file with *.data and get the data in every line
+    # append the line in the data_list"""
+    data_list = []
+    with open(data_path, 'r') as data_file:
+        lines = csv.reader(data_file, delimiter=',')
+        for line in lines:
+            data_list.append(line)
+        while [] in data_list:
+            data_list.remove([])
+    
+    # Read the file ending with *.names
+    # return the list of data attributes and their value type
+    def read_names_file(names_path):
+        """ Read scheme file *.names and write down attribute names and value types.
+            path: directory of *.names file. """
+        with open(names_path, 'r') as csv_file:
+            lines = csv.reader(csv_file, delimiter=',')
+            # Read the first line to get attributes name
+            attribute_names = next(lines) 
+            # Read the second line to get the value type for each attributes 
+            attribute_types = next(lines)  
+            return attribute_names, attribute_types
+    
+    attribute_names, attribute_types = read_names_file(names_path)
+    data_list = convert_to_numerical(data_list, attribute_types)
+    return data_list, attribute_names, attribute_types
+    
 
 # Testing
 if __name__ == '__main__':
     test_data_path = 'dataset/pima.data'
     test_names_path = 'dataset/pima.names'
-    data_list = read_data_file(test_data_path)
     test_data, test_attributes, test_attribute_types = read_files(test_data_path, test_names_path)
     result_data = preprocessing.preprocessing_main(test_data, test_attributes, test_attribute_types)
     print(result_data)

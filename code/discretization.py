@@ -17,7 +17,6 @@ class DataBlock:
 		# call the calculate entropy function
 		self.entropy = calculate_entropy(data)  
 
-
 def calculate_entropy(data):
     """ Calculate the entropy of dataset
     parameter data: the data table to be used. """
@@ -142,16 +141,7 @@ def complete_split(original_datablock):
     split_points.sort()                
     return split_points
     
-    
-# just for test
-if __name__ == '__main__':
-    import readfile       
-    test_data_path = 'dataset/iris.data'
-    test_names_path = 'dataset/iris.names'
-    data_list = readfile.read_data_file(test_data_path)
-    data_block = DataBlock(data_list)
-    test_split_points = complete_split(data_block)
-    print(test_split_points)
+
     
     
 

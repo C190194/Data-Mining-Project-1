@@ -117,11 +117,11 @@ def prune(rule, dataset):
 
         # calculate how many errors the rule r make in the dataset
         def get_rule_errors(r):
-            import CBA_CB_M1
+            import CBA_CB_M2
 
             error_num = 0
             for case in dataset:
-                if CBA_CB_M1.check_cover(case, r) == False:
+                if CBA_CB_M2.check_cover(case, r) == False:
                     error_num += 1
             return error_num
 
